@@ -16,4 +16,4 @@ dash-html-components = "*"
 python_version = "3.6"
 
 [scripts]
-
+app = "python app.py"
