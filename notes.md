@@ -15,3 +15,8 @@ https://www.youtube.com/watch?v=J_Cy_QjG6NE&list=PLQVvvaa0QuDfsGImWNt1eUEveHOepk
 
 ## Videos
 [Dash INTRO](https://www.youtube.com/watch?v=sea2K4AuPOk)
+
+
+## Plot.ly Documentation
+- 35 chart types
+[Documentation](https://plot.ly/python/)
