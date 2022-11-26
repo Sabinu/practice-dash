@@ -4,7 +4,7 @@ import dash_html_components as html
 
 app = dash.Dash()
 
-markdown_text = '''
+markdown_text = """
 ### Dash and Markdown
 
 Dash apps can be written in Markdown.
@@ -12,11 +12,9 @@ Dash uses the [CommonMark](http://commonmark.org/)
 specification of Markdown.
 Check out their [60 Second Markdown Tutorial](http://commonmark.org/help/)
 if this is your first introduction to Markdown!
-'''
+"""
 
-app.layout = html.Div([
-    dcc.Markdown(children=markdown_text)
-])
+app.layout = html.Div([dcc.Markdown(children=markdown_text)])
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run_server()
