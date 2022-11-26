@@ -1,7 +1,5 @@
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash import Dash, dcc, html, Input, Output
+import plotly.express as px
 import pandas as pd
 import plotly.graph_objs as go
 
@@ -10,52 +8,45 @@ df = pd.read_csv(
     "datasets/master/gapminderDataFiveYear.csv"
 )
 
-app = dash.Dash()
+app = Dash(__name__)
 
 app.layout = html.Div(
     [
         dcc.Graph(id="graph-with-slider"),
         dcc.Slider(
-            id="year-slider",
-            min=df["year"].min(),
-            max=df["year"].max(),
-            value=df["year"].min(),
+            df["year"].min(),
+            df["year"].max(),
             step=None,
+            value=df["year"].min(),
             marks={str(year): str(year) for year in df["year"].unique()},
+            id="year-slider",
         ),
     ]
 )
 
 
-@app.callback(Output("graph-with-slider", "figure"), [Input("year-slider", "value")])
-def update_figure(selected_year):
+@app.callback(
+    Output("graph-with-slider", "figure"),
+    Input("year-slider", "value"),
+)
+def update_figure(selected_year: int) -> go.Figure:
     filtered_df = df[df.year == selected_year]
-    traces = []
-    for i in filtered_df.continent.unique():
-        df_by_continent = filtered_df[filtered_df["continent"] == i]
-        traces.append(
-            go.Scatter(
-                x=df_by_continent["gdpPercap"],
-                y=df_by_continent["lifeExp"],
-                text=df_by_continent["country"],
-                mode="markers",
-                opacity=0.7,
-                marker={"size": 15, "line": {"width": 0.5, "color": "white"}},
-                name=i,
-            )
-        )
 
-    return {
-        "data": traces,
-        "layout": go.Layout(
-            xaxis={"type": "log", "title": "GDP Per Capita"},
-            yaxis={"title": "Life Expectancy", "range": [20, 90]},
-            margin={"l": 40, "b": 40, "t": 10, "r": 10},
-            legend={"x": 0, "y": 1},
-            hovermode="closest",
-        ),
-    }
+    fig = px.scatter(
+        filtered_df,
+        x="gdpPercap",
+        y="lifeExp",
+        size="pop",
+        color="continent",
+        hover_name="country",
+        log_x=True,
+        size_max=55,
+    )
+
+    fig.update_layout(transition_duration=500)
+
+    return fig
 
 
 if __name__ == "__main__":
-    app.run_server()
+    app.run(debug=True)
