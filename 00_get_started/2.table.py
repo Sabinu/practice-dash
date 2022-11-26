@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc
+from dash import Dash, html
 import pandas as pd
 
 df = pd.read_csv(
@@ -9,18 +9,16 @@ df = pd.read_csv(
 )
 
 
-def generate_table(dataframe, max_rows=10):
+def generate_table(df: pd.DataFrame, max_rows: int = 10) -> html.Table:
     return html.Table(
         [
             html.Thead(
-                html.Tr([html.Th(col) for col in dataframe.columns]),
+                html.Tr([html.Th(col) for col in df.columns]),
             ),
             html.Tbody(
                 [
-                    html.Tr(
-                        [html.Td(dataframe.iloc[i][col]) for col in dataframe.columns]
-                    )
-                    for i in range(min(len(dataframe), max_rows))
+                    html.Tr([html.Td(df.iloc[i][col]) for col in df.columns])
+                    for i in range(min(len(df), max_rows))
                 ]
             ),
         ]
@@ -30,7 +28,10 @@ def generate_table(dataframe, max_rows=10):
 app = Dash(__name__)
 
 app.layout = html.Div(
-    children=[html.H4(children="US Agriculture Exports (2011)"), generate_table(df)]
+    [
+        html.H4("US Agriculture Exports (2011)"),
+        generate_table(df),
+    ]
 )
 
 if __name__ == "__main__":
