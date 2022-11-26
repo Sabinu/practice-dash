@@ -1,59 +1,36 @@
-# -*- coding: utf-8 -*-
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash import Dash, dcc, html, Input, Output
 
-app = dash.Dash(__name__)
+external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
-all_options = {
-    "America": ["New York City", "San Francisco", "Cincinnati"],
-    "Canada": ["Montréal", "Toronto", "Ottawa"],
-}
+app = Dash(__name__, external_stylesheets=external_stylesheets)
+
 app.layout = html.Div(
     [
-        dcc.RadioItems(
-            id="countries-dropdown",
-            options=[{"label": k, "value": k} for k in all_options.keys()],
-            value="America",
+        dcc.Input(id="num-multi", type="number", value=5),
+        html.Table(
+            [
+                html.Tr([html.Td(["x", html.Sup(2)]), html.Td(id="square")]),
+                html.Tr([html.Td(["x", html.Sup(3)]), html.Td(id="cube")]),
+                html.Tr([html.Td([2, html.Sup("x")]), html.Td(id="twos")]),
+                html.Tr([html.Td([3, html.Sup("x")]), html.Td(id="threes")]),
+                html.Tr([html.Td(["x", html.Sup("x")]), html.Td(id="x^x")]),
+            ]
         ),
-        html.Hr(),
-        dcc.RadioItems(id="cities-dropdown"),
-        html.Hr(),
-        html.Div(id="display-selected-values"),
     ]
 )
 
 
 @app.callback(
-    dash.dependencies.Output("cities-dropdown", "options"),
-    [dash.dependencies.Input("countries-dropdown", "value")],
+    Output("square", "children"),
+    Output("cube", "children"),
+    Output("twos", "children"),
+    Output("threes", "children"),
+    Output("x^x", "children"),
+    Input("num-multi", "value"),
 )
-def set_cities_options(selected_country):
-    return [{"label": i, "value": i} for i in all_options[selected_country]]
-
-
-@app.callback(
-    dash.dependencies.Output("cities-dropdown", "value"),
-    [dash.dependencies.Input("cities-dropdown", "options")],
-)
-def set_cities_value(available_options):
-    return available_options[0]["value"]
-
-
-@app.callback(
-    dash.dependencies.Output("display-selected-values", "children"),
-    [
-        dash.dependencies.Input("countries-dropdown", "value"),
-        dash.dependencies.Input("cities-dropdown", "value"),
-    ],
-)
-def set_display_children(selected_country, selected_city):
-    return "{} is a city in {}".format(
-        selected_city,
-        selected_country,
-    )
+def callback_a(x: int) -> tuple[int, int, int, int, int]:
+    return x**2, x**3, 2**x, 3**x, x**x
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run(debug=True)
