@@ -1,19 +1,13 @@
-import dash
-import dash_core_components as dcc
-import dash_html_components as html
-import pandas as pd
+from dash import Dash, dcc, html, Input, Output
+import plotly.express as px
 import plotly.graph_objs as go
+import pandas as pd
 
-app = dash.Dash()
+from typing import Literal
 
-df = pd.read_csv(
-    "https://gist.githubusercontent.com/chriddyp/"
-    "cb5392c35661370d95f300086accea51/raw/"
-    "8e0768211f6b747c0db42a9ce9a0937dafcbd8b2/"
-    "indicators.csv"
-)
+app = Dash(__name__)
 
-available_indicators = df["Indicator Name"].unique()
+df = pd.read_csv("https://plotly.github.io/datasets/country_indicators.csv")
 
 app.layout = html.Div(
     [
@@ -21,42 +15,26 @@ app.layout = html.Div(
             [
                 html.Div(
                     [
-                        html.H1(children="X Axis"),
                         dcc.Dropdown(
+                            df["Indicator Name"].unique(),
+                            "Fertility rate, total (births per woman)",
                             id="xaxis-column",
-                            options=[
-                                {"label": i, "value": i} for i in available_indicators
-                            ],
-                            value="Fertility rate, total (births per woman)",
                         ),
                         dcc.RadioItems(
-                            id="xaxis-type",
-                            options=[
-                                {"label": i, "value": i} for i in ["Linear", "Log"]
-                            ],
-                            value="Linear",
-                            labelStyle={"display": "inline-block"},
+                            ["linear", "log"], "linear", id="xaxis-type", inline=True
                         ),
                     ],
                     style={"width": "48%", "display": "inline-block"},
                 ),
                 html.Div(
                     [
-                        html.H1(children="Y Axis"),
                         dcc.Dropdown(
+                            df["Indicator Name"].unique(),
+                            "Life expectancy at birth, total (years)",
                             id="yaxis-column",
-                            options=[
-                                {"label": i, "value": i} for i in available_indicators
-                            ],
-                            value="Life expectancy at birth, total (years)",
                         ),
                         dcc.RadioItems(
-                            id="yaxis-type",
-                            options=[
-                                {"label": i, "value": i} for i in ["Linear", "Log"]
-                            ],
-                            value="Linear",
-                            labelStyle={"display": "inline-block"},
+                            ["linear", "log"], "linear", id="yaxis-type", inline=True
                         ),
                     ],
                     style={"width": "48%", "float": "right", "display": "inline-block"},
@@ -65,61 +43,47 @@ app.layout = html.Div(
         ),
         dcc.Graph(id="indicator-graphic"),
         dcc.Slider(
-            id="year--slider",
-            min=df["Year"].min(),
-            max=df["Year"].max(),
-            value=df["Year"].max(),
+            df["Year"].min(),
+            df["Year"].max(),
             step=None,
+            id="year--slider",
+            value=df["Year"].max(),
             marks={str(year): str(year) for year in df["Year"].unique()},
         ),
-    ]
+    ],
+    style={"font-family": "monospace"},
 )
 
 
 @app.callback(
-    dash.dependencies.Output("indicator-graphic", "figure"),
-    [
-        dash.dependencies.Input("xaxis-column", "value"),
-        dash.dependencies.Input("yaxis-column", "value"),
-        dash.dependencies.Input("xaxis-type", "value"),
-        dash.dependencies.Input("yaxis-type", "value"),
-        dash.dependencies.Input("year--slider", "value"),
-    ],
+    Output("indicator-graphic", "figure"),
+    Input("xaxis-column", "value"),
+    Input("yaxis-column", "value"),
+    Input("xaxis-type", "value"),
+    Input("yaxis-type", "value"),
+    Input("year--slider", "value"),
 )
 def update_graph(
-    xaxis_column_name, yaxis_column_name, xaxis_type, yaxis_type, year_value
-):
-
+    xaxis_column_name: str,
+    yaxis_column_name: str,
+    xaxis_type: Literal["linear", "log"],
+    yaxis_type: Literal["linear", "log"],
+    year_value: int,
+) -> go.Figure:
     dff = df[df["Year"] == year_value]
 
-    return {
-        "data": [
-            go.Scatter(
-                x=dff[dff["Indicator Name"] == xaxis_column_name]["Value"],
-                y=dff[dff["Indicator Name"] == yaxis_column_name]["Value"],
-                text=dff[dff["Indicator Name"] == yaxis_column_name]["Country Name"],
-                mode="markers",
-                marker={
-                    "size": 15,
-                    "opacity": 0.5,
-                    "line": {"width": 0.5, "color": "white"},
-                },
-            )
-        ],
-        "layout": go.Layout(
-            xaxis={
-                "title": xaxis_column_name,
-                "type": "linear" if xaxis_type == "Linear" else "log",
-            },
-            yaxis={
-                "title": yaxis_column_name,
-                "type": "linear" if yaxis_type == "Linear" else "log",
-            },
-            margin={"l": 40, "b": 40, "t": 10, "r": 0},
-            hovermode="closest",
-        ),
-    }
+    fig = px.scatter(
+        x=dff[dff["Indicator Name"] == xaxis_column_name]["Value"],
+        y=dff[dff["Indicator Name"] == yaxis_column_name]["Value"],
+        hover_name=dff[dff["Indicator Name"] == yaxis_column_name]["Country Name"],
+    )
+
+    fig.update_layout(margin={"l": 40, "b": 40, "t": 10, "r": 0}, hovermode="closest")
+    fig.update_xaxes(title=xaxis_column_name, type=xaxis_type)
+    fig.update_yaxes(title=yaxis_column_name, type=yaxis_type)
+
+    return fig
 
 
 if __name__ == "__main__":
-    app.run_server()
+    app.run(debug=True)
