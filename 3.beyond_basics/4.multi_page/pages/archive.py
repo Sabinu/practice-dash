@@ -4,7 +4,7 @@ register_page(__name__)
 
 layout = html.Div(
     [
-        html.H1("This is our Archive page"),
+        html.H1("page: Archive", className="text-lg font-bold"),
         html.Div("This is our Archive page content."),
     ]
 )

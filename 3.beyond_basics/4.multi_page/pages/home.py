@@ -4,7 +4,7 @@ register_page(__name__, path="/")
 
 layout = html.Div(
     [
-        html.H1("This is our Home page"),
+        html.H1("page: HOME", className="text-lg font-bold"),
         html.Div("This is our Home page content."),
     ]
 )

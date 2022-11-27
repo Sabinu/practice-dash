@@ -4,7 +4,7 @@ register_page(__name__)
 
 layout = html.Div(
     [
-        html.H1("This is our Analytics page"),
+        html.H1("page: Analytics", className="text-lg font-bold"),
         html.Div(
             [
                 "Select a city: ",
